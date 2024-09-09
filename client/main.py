@@ -1,11 +1,42 @@
 import socket
+import threading
+import pygame
+import sys
+from pong import game
 
-HOST = "127.0.0.1"  # The server's hostname or IP address
-PORT = 65432  # The port used by the server
+# Server address configuration
+HOST = '127.0.0.1'  # Same as the server address
+PORT = 12345        # Same port as the server
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))
-    s.sendall(b"Hello, world")
-    data = s.recv(1024)
+def receive_messages(client_socket):
+    while True:
+        try:
+            message = client_socket.recv(1024).decode('utf-8')
+            if message:
+                print(f"[RECEIVED] {message}")
+            else:
+                break
+        except:
+            print("[ERROR] Connection to the server lost.")
+            break
 
-print(f"Received {data!r}")
+def send_messages(client_socket):
+    while True:
+        message = input("")
+        client_socket.send(message.encode('utf-8'))
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client_socket.connect((HOST, PORT))
+
+receive_thread = threading.Thread(target=receive_messages, args=(client_socket,))
+send_thread = threading.Thread(target=send_messages, args=(client_socket,))
+game_client = threading.Thread(target=game, args=(client_socket,))
+
+receive_thread.start()
+send_thread.start()
+game_client.start()
+
+receive_thread.join()
+send_thread.join()
+game_client.join()
+
