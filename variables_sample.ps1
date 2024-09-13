@@ -1,0 +1,1 @@
+$folder_path = "put your path to simple_online_pygame folder here"
