@@ -1,9 +1,29 @@
 import pygame
+import queue
 import sys
 import socket
 import threading
+from colored_print import log
 
-def game(client_socket):
+position_str_l = "0,0"
+position_str_r = "0,0"
+
+def send_paddle_pos(paddle, client_socket, is_left):
+    global position_str_l
+    global position_str_r
+    if(is_left == True):
+        if(position_str_l != f"{paddle[0]},{paddle[1]}"):
+            position_str_l = f"{paddle[0]},{paddle[1]}"
+            client_socket.send(position_str_l.encode('utf-8'))
+    else:
+        if(position_str_r != f"{paddle[0]},{paddle[1]}"):
+            position_str_r = f"{paddle[0]},{paddle[1]}"
+            client_socket.send(position_str_r.encode('utf-8'))
+    
+    
+
+def game(client_socket, message_queue):
+    global position_str_l
     
     # Initialize pygame
     pygame.init()
@@ -29,11 +49,18 @@ def game(client_socket):
 
     # Ball position and velocity
     ball = pygame.Rect(WIDTH // 2 - ball_size // 2, HEIGHT // 2 - ball_size // 2, ball_size, ball_size)
-    
-    position_str = "0,0"
 
     # Game loop
     while True:
+        message = ""
+        received_message = False
+        try:
+            message = message_queue.get_nowait()
+            log.warning(message)
+            received_message = True
+        except queue.Empty:
+            received_message = False
+            
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -72,9 +99,12 @@ def game(client_socket):
         screen.fill(BLACK)
 
         # Draw paddles and ball
-        if(position_str != f"{left_paddle[0]},{left_paddle[1]}"):
-            position_str = f"{left_paddle[0]},{left_paddle[1]}"
-            client_socket.send(position_str.encode('utf-8'))
+        # if(position_str != f"{left_paddle[0]},{left_paddle[1]}"):
+        #     position_str = f"{left_paddle[0]},{left_paddle[1]}"
+        #     client_socket.send(position_str.encode('utf-8'))
+        
+        send_paddle_pos(left_paddle, client_socket, True)
+        
         pygame.draw.rect(screen, WHITE, left_paddle)
         pygame.draw.rect(screen, WHITE, right_paddle)
         pygame.draw.ellipse(screen, WHITE, ball)
@@ -87,3 +117,5 @@ def game(client_socket):
 
         # Set the frame rate
         pygame.time.Clock().tick(60)
+        if(received_message):
+            message_queue.task_done()
