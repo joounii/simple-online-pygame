@@ -1,5 +1,6 @@
 import socket
 import threading
+import json
 from colored_print import log
 
 # Server configuration
@@ -14,9 +15,10 @@ def handle_client(conn, addr, client_id):
     connected = True
     while connected:
         try:
-            message = conn.recv(1024).decode('utf-8')
+            message = json.loads(conn.recv(1024).decode('utf-8'))
             if message:
                 print(f"[MESSAGE FROM {addr} (ID: {client_id})] {message}")
+                
                 broadcast(message, conn)
             else:
                 connected = False
@@ -32,9 +34,11 @@ def handle_client(conn, addr, client_id):
             break
     print(f"[DISCONNECTED] {addr} (ID: {client_id}) disconnected.")
 
-def broadcast(message, current_conn):
+def broadcast(data, current_conn):
+    message = data["message"]
     for client in clients:
         print(client)
+        # finde what player sent the message and add it to the message
         if client["conn"] != current_conn:
             if current_conn == clients[0]["conn"]:
                 data_message = "1;" + message
@@ -44,7 +48,6 @@ def broadcast(message, current_conn):
                 data_message = "3;" + message
                 
             try:
-                
                 log.success(data_message)
                 client['conn'].send(data_message.encode('utf-8'))
             except:

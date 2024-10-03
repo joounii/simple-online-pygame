@@ -1,6 +1,7 @@
 import pygame
 import queue
 import sys
+import json
 import socket
 import threading
 from colored_print import log
@@ -14,11 +15,13 @@ def send_paddle_pos(paddle, client_socket, is_left):
     if(is_left == True):
         if(position_str_l != f"{paddle[0]},{paddle[1]}"):
             position_str_l = f"{paddle[0]},{paddle[1]}"
-            client_socket.send(position_str_l.encode('utf-8'))
+            message = {"command": "almost_all", "message": position_str_l}
+            client_socket.send(json.dumps(message).encode('utf-8'))
     else:
         if(position_str_r != f"{paddle[0]},{paddle[1]}"):
             position_str_r = f"{paddle[0]},{paddle[1]}"
-            client_socket.send(position_str_r.encode('utf-8'))
+            message = {"command": "almost_all", "message": position_str_r}
+            client_socket.send(json.dumps(message).encode('utf-8'))
     
     
 

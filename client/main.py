@@ -16,6 +16,7 @@ def receive_messages(client_socket, message_queue):
             message = client_socket.recv(1024).decode('utf-8')
             if message:
                 print(f"[RECEIVED] {message}")
+                
                 message_queue.put(message)
             else:
                 break
