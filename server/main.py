@@ -36,17 +36,17 @@ def broadcast(message, current_conn):
     for client in clients:
         print(client)
         if client["conn"] != current_conn:
-            if client['id'] == min(client['id']):
-                message = "1;" + message
-            elif client['id'] == min(client['id'] + 1):
-                message = "2;" + message
+            if current_conn == clients[0]["conn"]:
+                data_message = "1;" + message
+            elif current_conn == clients[1]["conn"]:
+                data_message = "2;" + message
             else:
-                message = "3;" + message
+                data_message = "3;" + message
                 
             try:
                 
-                log.success(message)
-                client['conn'].send(message.encode('utf-8'))
+                log.success(data_message)
+                client['conn'].send(data_message.encode('utf-8'))
             except:
                 clients.remove(client)
 
