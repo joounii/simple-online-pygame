@@ -10,6 +10,28 @@ PORT = 12345        # Port to listen on
 clients = []
 client_id_counter = 0
 
+# commands the server can handle.
+def command_almost_all(data, current_conn):
+    message = data["message"]
+    for client in clients:
+        print(client)
+        # finde what player sent the message and add it to the message
+        if client["conn"] != current_conn:
+            if current_conn == clients[0]["conn"]:
+                data_message = "1;" + message
+            elif current_conn == clients[1]["conn"]:
+                data_message = "2;" + message
+            else:
+                data_message = "3;" + message
+                
+            try:
+                log.success(data_message)
+                client['conn'].send(data_message.encode('utf-8'))
+            except:
+                clients.remove(client)
+                
+# code for the server
+
 def handle_client(conn, addr, client_id):
     print(f"[NEW CONNECTION] {addr} (ID: {client_id}) connected.")
     connected = True
@@ -35,23 +57,10 @@ def handle_client(conn, addr, client_id):
     print(f"[DISCONNECTED] {addr} (ID: {client_id}) disconnected.")
 
 def broadcast(data, current_conn):
-    message = data["message"]
-    for client in clients:
-        print(client)
-        # finde what player sent the message and add it to the message
-        if client["conn"] != current_conn:
-            if current_conn == clients[0]["conn"]:
-                data_message = "1;" + message
-            elif current_conn == clients[1]["conn"]:
-                data_message = "2;" + message
-            else:
-                data_message = "3;" + message
-                
-            try:
-                log.success(data_message)
-                client['conn'].send(data_message.encode('utf-8'))
-            except:
-                clients.remove(client)
+    if data["command"] == "almost_all":
+        command_almost_all(data, current_conn)
+    
+    
 
 def start():
     global client_id_counter
