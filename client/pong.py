@@ -15,12 +15,12 @@ def send_paddle_pos(paddle, client_socket, is_left):
     if(is_left == True):
         if(position_str_l != f"{paddle[0]},{paddle[1]}"):
             position_str_l = f"{paddle[0]},{paddle[1]}"
-            message = {"command": "almost_all", "message": position_str_l}
+            message = {"command": "player_move", "message": position_str_l}
             client_socket.send(json.dumps(message).encode('utf-8'))
     else:
         if(position_str_r != f"{paddle[0]},{paddle[1]}"):
             position_str_r = f"{paddle[0]},{paddle[1]}"
-            message = {"command": "almost_all", "message": position_str_r}
+            message = {"command": "player_move", "message": position_str_r}
             client_socket.send(json.dumps(message).encode('utf-8'))
     
     
